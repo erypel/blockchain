@@ -1,5 +1,4 @@
 import java.util.Date;
-//import java.security.MessageDigest;
 
 public class Block {
 	public String hash; // digital signature
