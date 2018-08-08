@@ -1,16 +1,17 @@
+import java.util.ArrayList;
 import java.util.Date;
 
 public class Block {
 	public String hash; // digital signature
 	public String previousHash; // the previous block's hash
-	private String data; // will be a simple message for practice's sake
+	public String merkleRoot;
+	public ArrayList<Transaction> transactions = new ArrayList<Transaction>(); //our data 
 	private long timeStamp; // as a number of milliseconds since 1/1/1970
 	private int nonce;
 	
 	
 	// Block constructor
-	public Block(String data, String previousHash) {
-		this.data = data;
+	public Block(String previousHash) {
 		this.previousHash = previousHash;
 		this.timeStamp = new Date().getTime();
 		
@@ -23,7 +24,7 @@ public class Block {
 				previousHash + 
 				Long.toString(timeStamp) +
 				Integer.toString(nonce) +
-				data);
+				merkleRoot);
 		return calculatedHash;
 	}
 	
@@ -33,6 +34,7 @@ public class Block {
 	 * @param difficulty
 	 */
 	public void mineBlock(int difficulty) {
+		merkleRoot = StringUtil.getMerkleRoot(transactions);
 		// create a String with difficulty * "0"
 		String target = new String(new char[difficulty]).replace('\0', '0');
 		while(!hash.substring(0, difficulty).equals(target)) {
@@ -40,5 +42,20 @@ public class Block {
 			hash = calculateHash();
 		}
 		System.out.println("Block mined!! : " + hash);
+	}
+	
+	//add transactions to this block
+	public boolean addTransaction(Transaction transaction) {
+		//process transaction and check if valid. Ignore if this is the genesis block
+		if(transaction == null) return false;
+		if((previousHash != "0")) {
+			if(transaction.processTransaction() != true) {
+				System.out.println("#Transaction failed to process. Discarded.");
+				return false;
+			}
+		}
+		transactions.add(transaction);
+		System.out.println("Transaction Successfully added to Block");
+		return true;
 	}
 }
